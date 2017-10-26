@@ -1,0 +1,92 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+                    xmlns:Controls="clr-namespace:Controls" 
+                    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <System:Double x:Key="TileSize">42</System:Double>
+
+    <DataTemplate x:Key="TileTemplate">
+        <Border CornerRadius="4" BorderThickness="1,1,2,2" BorderBrush="LightGray" Background="Whitesmoke" Margin="0,0,0,0">
+            <Viewbox Stretch="Uniform">
+                <Grid Width="40" Height="40">
+                    <TextBlock FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,2,6" Text="{Binding Path=Tile.Letter, Mode=OneWay}" />
+                    <TextBlock FontSize="9" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="2" Text="{Binding Path=Tile.Points, Mode=OneWay}" >
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=Tile.Points, Mode=OneWay}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </Viewbox>
+        </Border>
+    </DataTemplate>
+
+    <Style TargetType="{x:Type Controls:BoardPanel}">
+        <Setter Property="CellSize" Value="{StaticResource TileSize}"/>
+    </Style>
+
+    <Style TargetType="{x:Type Controls:BoardGridLines}">
+        <Setter Property="CellSize" Value="{StaticResource TileSize}"/>
+    </Style>
+
+    <ItemsPanelTemplate x:Key="BoardPanel">
+        <Controls:BoardPanel CellSize="{StaticResource TileSize}" UseLayoutRounding="true" />
+    </ItemsPanelTemplate>
+
+    <Style x:Key="TilePresenter" TargetType="ContentPresenter">
+        <Setter Property="Grid.Column" Value="{Binding Path=Location.Column}" />
+        <Setter Property="Grid.Row" Value="{Binding Path=Location.Row}" />
+    </Style>
+
+    <Style x:Key="BoardStyle" TargetType="ItemsControl">
+        <Setter Property="ItemsPanel" Value="{StaticResource BoardPanel}" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource TilePresenter}" />
+        <Setter Property="ItemTemplate" Value="{StaticResource TileTemplate}" />
+    </Style>
+
+    <!-- Rack-related styles -->
+
+    <Style TargetType="Controls:RackItem">
+        <Setter Property="Canvas.Left" Value="{Binding Path=PositionInRack, Mode=TwoWay}" />
+        <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+
+        <Setter Property="ListBoxItem.Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Grid SnapsToDevicePixels="true">
+                        <Border SnapsToDevicePixels="true" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <Rectangle x:Name="Hilight" RadiusX="4" RadiusY="4" Margin="1" Fill="#400000FF" IsHitTestVisible="false" Visibility="Collapsed" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="true">
+                            <Setter TargetName="Hilight"  Property="Visibility" Value="Visible" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Controls:Rack}">
+        <Setter Property="TileSize" Value="{StaticResource TileSize}"/>
+        <Setter Property="SelectionMode" Value="Multiple"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <Canvas MinHeight="{StaticResource TileSize}" />
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

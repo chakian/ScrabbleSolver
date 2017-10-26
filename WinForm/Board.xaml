@@ -4,9 +4,200 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinForm"
+        xmlns:Controls="clr-namespace:Controls"
+        xmlns:Model="clr-namespace:Model;assembly=Model"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="Board" Height="650" Width="900">
+    <Window.Resources>
+
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/Generic.xaml" />
+                <ResourceDictionary Source="/Themes/BoardStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="BorderBrush" Color="Gainsboro" />
+
+            <Storyboard x:Key="ShowHotCue">
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
+                    <DiscreteObjectKeyFrame KeyTime="0">
+                        <DiscreteObjectKeyFrame.Value>
+                            <Visibility>Visible</Visibility>
+                        </DiscreteObjectKeyFrame.Value>
+                    </DiscreteObjectKeyFrame>
+                </ObjectAnimationUsingKeyFrames>
+                <DoubleAnimation To="1" Duration="0:0:0.5" AccelerationRatio="0.4" Storyboard.TargetProperty="Opacity" />
+            </Storyboard>
+
+            <Storyboard x:Key="HideHotCue">
+                <DoubleAnimation To="0" Duration ="0" Storyboard.TargetProperty="Opacity" />
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
+                    <DiscreteObjectKeyFrame KeyTime="0">
+                        <DiscreteObjectKeyFrame.Value>
+                            <Visibility>Hidden</Visibility>
+                        </DiscreteObjectKeyFrame.Value>
+                    </DiscreteObjectKeyFrame>
+                </ObjectAnimationUsingKeyFrames>
+            </Storyboard>
+
+            <DataTemplate x:Key="SquareTemplate">
+                <Grid SnapsToDevicePixels="true">
+                    <!--MouseLeftButtonDown="OnPreviewMouseLeftButtonDownInSquare"--> 
+                    <!-- Base -->
+                    <Rectangle><!--Fill="{Binding ScoringStyle, Converter={StaticResource ScoringStyleConverter}, Mode=OneTime}">-->
+                        <Rectangle.ToolTip>
+                            <ToolTip>
+                                <ToolTip.Style>
+                                    <Style TargetType="ToolTip">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ScoringStyle}">
+                                                <DataTrigger.Value>
+                                                    <Model:ScoringStyle>LetterOnly</Model:ScoringStyle>
+                                                </DataTrigger.Value>
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToolTip.Style>
+                                <!--<TextBlock Text="{Binding ScoringStyle, Converter={StaticResource ScoringStyleToTextConverter}}" />-->
+                            </ToolTip>
+                        </Rectangle.ToolTip>
+                    </Rectangle>
+
+                    <!-- Center star -->
+                    <Viewbox Margin="-1,-1,0,0" Width="19" Stretch="Uniform" IsHitTestVisible="false"><!--Visibility="{Binding IsAtCenter, Mode=OneTime, Converter={StaticResource VisibilityConverter}}"-->
+                        <Path Fill="DarkRed" Data="M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z" />
+                    </Viewbox>
+                </Grid>
+            </DataTemplate>
+
+        </ResourceDictionary>
+
+    </Window.Resources>
+    <Grid Background="#FF438BC9" Margin="0,0,0,0">
+        <Canvas HorizontalAlignment="Left" Height="600" Margin="10,10,0,0" VerticalAlignment="Top" Width="600" Background="#FFD9DADC">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="0" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Horizontal Axis Labels -->
+                <ItemsControl Grid.Column="1" Grid.Row="0" ItemsSource="{Binding LabelsAcross, Mode=OneTime}" Margin="6,0,6,0" IsTabStop="false">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Center" Text="{Binding}" FontSize="9" FontWeight="Bold" Foreground="Gainsboro" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Vertical Axis Labels -->
+                <ItemsControl Grid.Column="0" Grid.Row="1" ItemsSource="{Binding LabelsDown, Mode=OneTime}" Margin="0,6,0,6" IsTabStop="false">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Text="{Binding}" FontSize="9" FontWeight="Bold" Foreground="Gainsboro" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Board -->
+                <Border Grid.Column="1" Grid.Row="1" BorderThickness="2,2,1,1" BorderBrush="{StaticResource BorderBrush}" SnapsToDevicePixels="true" Margin="6">
+
+                    <Grid Height="{Binding Path=ActualWidth, RelativeSource={RelativeSource Self}}">
+
+                        <!-- Squares -->
+                        <ItemsControl x:Name="Squares" Style="{StaticResource BoardStyle}" ItemTemplate="{StaticResource SquareTemplate}" />
+
+                        <!-- Gridlines -->
+                        <Controls:BoardGridLines />
+
+                        <!-- Tiles -->
+                        <ItemsControl Style="{StaticResource BoardStyle}" ItemsSource="{Binding TilesInPlay}" />
+                        <ItemsControl Style="{StaticResource BoardStyle}" DataContext="{Binding InputBox}" ItemsSource="{Binding TilesInProposedPlay}" />
+
+                        <!-- Cues -->
+                        <Controls:ScrabbleGrid>
+
+                            <!-- Highlight glow -->
+                            <Border x:Name="HighlightBox" BorderBrush="Gold" BorderThickness="3" Margin="-3" IsHitTestVisible="false" CornerRadius="4" Background="#10FFD700"
+                        Grid.Column="{Binding Path=HighlightVector.StartingLocation.Column}" 
+                        Grid.ColumnSpan="{Binding Path=HighlightVector.ColumnsSpanned}" 
+                        Grid.Row="{Binding Path=HighlightVector.StartingLocation.Row}" 
+                        Grid.RowSpan="{Binding Path=HighlightVector.RowsSpanned}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HighlightVector}" Value="{x:Null}">
+                                                <!--<Setter Property="Visibility" Value="Collapsed" />-->
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard Storyboard="{StaticResource HideHotCue}" />
+                                                </DataTrigger.EnterActions>
+                                                <DataTrigger.ExitActions>
+                                                    <BeginStoryboard Storyboard="{StaticResource ShowHotCue}" />
+                                                </DataTrigger.ExitActions>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Border.Effect>
+                                    <BlurEffect Radius="10"   />
+                                </Border.Effect>
+                            </Border>
+
+                            <!-- Input area -->
+                            <ContentControl x:Name="InputBox" 
+                        Grid.Column="{Binding Path=InputBox.SelectedArea.StartingLocation.Column}" 
+                        Grid.ColumnSpan="{Binding Path=InputBox.SelectedArea.ColumnsSpanned}" 
+                        Grid.Row="{Binding Path=InputBox.SelectedArea.StartingLocation.Row}" 
+                        Grid.RowSpan="{Binding Path=InputBox.SelectedArea.RowsSpanned}" />
+                        </Controls:ScrabbleGrid>
+                    </Grid>
+                </Border>
+
+                <!-- Rack Controls -->
+                <Border Grid.Column="1" Grid.Row="3" Margin="8" BorderBrush="Green" BorderThickness="1" MinWidth="400">
+                    <DockPanel Margin="2">
+
+                        <!-- Buttons -->
+                        <StackPanel DockPanel.Dock="Right" Margin="2,0,0,0" Orientation="Horizontal">
+                            <StackPanel.Resources>
+                                <Style TargetType="Button">
+                                    <Setter Property="MinWidth" Value="65" />
+                                    <Setter Property="Margin" Value="3,0,0,0" />
+                                </Style>
+                            </StackPanel.Resources>
+                            <!--<Button Content="Play" cal:Message.Attach="CommitPlay" cal:Action.TargetWithoutContext="{Binding InputBox}" />
+                            <Button Content="Exchange" cal:Message.Attach="Exchange"  cal:Action.TargetWithoutContext="{Binding InputBox}"  />
+                            <Button Content="Pass" cal:Message.Attach="Pass" cal:Action.TargetWithoutContext="{Binding InputBox}"  />-->
+                        </StackPanel>
+
+                        <Controls:Rack x:Name="Rack" ItemsSource="{Binding Path=InputBox.AvailableTiles}" ItemTemplate="{StaticResource TileTemplate}" Background="Ivory" />
+
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Canvas>
+        <Label Content="Letters" HorizontalAlignment="Left" Margin="615,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.484,0.571" Width="267" FontSize="18" FontWeight="Bold"/>
+        <TextBox Name="txtLetters" HorizontalAlignment="Left" Height="29" Margin="615,49,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="267" FontSize="18" FontWeight="Bold" KeyUp="txtLetters_KeyUp" />
+        <Button Name="btnFindWords" Content="Find Words" HorizontalAlignment="Left" Margin="615,83,0,0" VerticalAlignment="Top" Width="267" Height="53" Background="#FFFFFFDD" FontSize="18" FontWeight="Bold" Click="btnFindWords_Click"/>
+        <ListBox Name="lstFoundWords" HorizontalAlignment="Left" Height="468" Margin="615,141,0,0" VerticalAlignment="Top" Width="267"/>
+
     </Grid>
 </Window>

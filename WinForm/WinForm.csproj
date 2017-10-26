@@ -81,8 +81,24 @@
       <DependentUpon>Board.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Themes\BoardStyles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\BoardGridLines.cs" />
+    <Compile Include="Controls\BoardMetrics.cs" />
+    <Compile Include="Controls\BoardPanel.cs" />
+    <Compile Include="Controls\DragEventArgs.cs" />
+    <Compile Include="Controls\Rack.cs" />
+    <Compile Include="Controls\RackItem.cs" />
+    <Compile Include="Controls\ScrabbleGrid.cs" />
+    <Compile Include="Controls\SearchTextBox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -119,6 +135,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{13EEF12E-5706-493D-9D23-C3A59733CA67}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
